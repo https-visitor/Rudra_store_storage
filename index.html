@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUDRA STORE — Master Storage & All-Data Inspector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: rgba(18, 24, 38, 0.82);
+            --bg-glass: rgba(255, 255, 255, 0.04);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --primary-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #f59e0b 100%);
+            --accent-purple: #a855f7;
+            --accent-gold: #f59e0b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #38bdf8;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --transition: all 0.2s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--text-primary); min-height: 100vh; padding-bottom: 60px; }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: rgba(11, 15, 25, 0.9);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 14px 20px;
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+
+        .btn {
+            border: 1px solid var(--border-glass);
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            padding: 7px 13px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-grad { background: var(--primary-gradient); border: none; color: #fff; }
+        .btn-danger { color: var(--accent-red); border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.08); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.22); }
+
+        /* Top Master Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media(min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 15px;
+        }
+        .stat-label { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+        .stat-val { font-size: 1.4rem; font-weight: 800; margin-top: 5px; }
+        .stat-sub { font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Main Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .nav-tab {
+            padding: 9px 16px;
+            border-radius: 99px;
+            border: 1px solid var(--border-glass);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: var(--transition);
+        }
+        .nav-tab.active {
+            background: var(--primary-gradient);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .node-row {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill { height: 100%; background: var(--primary-gradient); }
+
+        .tag-pill {
+            font-size: 0.66rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+        }
+        .tag-admin { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+        .tag-user { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+        .tag-shared { background: rgba(245, 158, 11, 0.18); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+        /* Image Cards Grid */
+        .img-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media(min-width: 680px) { .img-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media(min-width: 1024px) { .img-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .img-card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .img-box {
+            position: relative;
+            height: 150px;
+            background: #060911;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .record-box {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        pre {
+            background: #060911;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.74rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 8px;
+            max-height: 240px;
+        }
+
+        /* Lock Screen */
+        #lockScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-main);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lock-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 28px 22px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        .pin-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 11px;
+            color: #fff;
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            margin: 14px 0;
+            outline: none;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #131b2e;
+            border: 1px solid var(--accent-purple);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 99px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Security Lock Screen -->
+    <div id="lockScreen">
+        <div class="lock-box">
+            <i class="fa-solid fa-database gradient-text" style="font-size: 2.3rem; margin-bottom: 10px;"></i>
+            <h2 style="font-size: 1.25rem; font-weight: 800;">Master Storage & Data App</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Enter Admin PIN (Default: 1234)</p>
+            <form onsubmit="event.preventDefault(); app.unlock();">
+                <input type="password" id="pinField" class="pin-input" placeholder="••••" required autofocus>
+                <button type="submit" class="btn btn-grad" style="width: 100%; justify-content: center; padding: 11px;">
+                    <i class="fa-solid fa-unlock"></i> Inspect Complete App Data
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-inner">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-layer-group gradient-text" style="font-size: 1.35rem;"></i>
+                <div>
+                    <h1 style="font-size: 1.1rem; font-weight: 800;">RUDRA <span class="gradient-text">Master Storage & Data Inspector</span></h1>
+                    <span style="font-size: 0.7rem; color: var(--accent-green);">● Full Firebase Cloud + Admin & User Device Storage</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn" onclick="app.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh Scan</button>
+                <button class="btn btn-danger" onclick="app.lock()"><i class="fa-solid fa-lock"></i> Lock</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Top 4 Master Storage Summary Cards -->
+        <div class="stats-grid" id="masterSummaryCards"></div>
+
+        <!-- Panel Separation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" id="tab-overview" onclick="app.switchTab('overview')">
+                <i class="fa-solid fa-chart-pie"></i> Pure App Storage Overview
+            </button>
+            <button class="nav-tab" id="tab-admin" onclick="app.switchTab('admin')">
+                <i class="fa-solid fa-shield-halved"></i> Admin Panel Data
+            </button>
+            <button class="nav-tab" id="tab-user" onclick="app.switchTab('user')">
+                <i class="fa-solid fa-users"></i> User Panel Data
+            </button>
+            <button class="nav-tab" id="tab-images" onclick="app.switchTab('images')">
+                <i class="fa-solid fa-images"></i> Uploaded Images Storage
+            </button>
+            <button class="nav-tab" id="tab-device" onclick="app.switchTab('device')">
+                <i class="fa-solid fa-mobile-screen"></i> Browser / Device Storage
+            </button>
+        </div>
+
+        <!-- TAB 1: PURE APP STORAGE OVERVIEW -->
+        <div id="view-overview">
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 800;">Complete Firebase Database Storage (All Data Types)</h3>
+                        <p style="font-size: 0.76rem; color: var(--text-secondary);">Har section ka exact size, owner panel, aur record count</p>
+                    </div>
+                    <span id="totalDbSizePill" style="font-size: 0.82rem; font-weight: 800; color: var(--accent-gold);">0 B</span>
+                </div>
+                <div id="allNodesBreakdown"></div>
+            </div>
+
+            <!-- Quick Inspector Drawer inside Overview -->
+            <div class="section-card" id="quickInspectorCard" style="display: none; border-color: var(--accent-purple);">
+                <div class="section-head">
+                    <div>
+                        <h3 id="inspectorTitle" style="font-size: 0.98rem; font-weight: 800; color: var(--accent-purple);">Inspecting Data</h3>
+                        <span id="inspectorMeta" style="font-size: 0.74rem; color: var(--text-secondary);"></span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-danger" id="inspectorWipeBtn"><i class="fa-solid fa-trash"></i> Wipe Entire Section</button>
+                        <button class="btn" onclick="document.getElementById('quickInspectorCard').style.display='none'">Close</button>
+                    </div>
+                </div>
+                <div id="inspectorBody"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ADMIN PANEL DATA -->
+        <div id="view-admin" style="display: none;">
+            <div class="stats-grid" id="adminPanelStats"></div>
+            <div id="adminPanelSections"></div>
+        </div>
+
+        <!-- TAB 3: USER PANEL DATA -->
+        <div id="view-user" style="display: none;">
+            <div class="stats-grid" id="userPanelStats"></div>
+            <div id="userPanelSections"></div>
+        </div>
+
+        <!-- TAB 4: UPLOADED IMAGES STORAGE -->
+        <div id="view-images" style="display: none;">
+            <div class="stats-grid" id="imageStorageStats"></div>
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 style="font-size: 0.98rem; font-weight: 800;">All Product Images (Firebase DB Base64 vs External URLs)</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Uploaded photos <code>/products/{id}/imageUrl</code> aur <code>/gallery</code> mein save hoti hain</p>
+                    </div>
+                </div>
+                <div class="img-grid" id="allImagesGrid"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: BROWSER / DEVICE LOCAL STORAGE -->
+        <div id="view-device" style="display: none;">
+            <div class="stats-grid" id="deviceStorageStats"></div>
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 style="font-size: 0.98rem; font-weight: 800;">Device LocalStorage Keys (Admin Session + User Profile/Cart)</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Admin login session aur User ka cart/address alag-alag dikhaya gaya hai</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="app.clearAllLocal()">
+                        <i class="fa-solid fa-broom"></i> Clear All Local Storage
+                    </button>
+                </div>
+                <div id="deviceKeysList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <!-- Firebase v10 SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeJeap763kAEYjjCXaTP4EEDfvmE29hEw",
+            authDomain: "saurabhadmin-fd6cb.firebaseapp.com",
+            databaseURL: "https://saurabhadmin-fd6cb-default-rtdb.firebaseio.com",
+            projectId: "saurabhadmin-fd6cb",
+            storageBucket: "saurabhadmin-fd6cb.firebasestorage.app",
+            messagingSenderId: "1094207249669",
+            appId: "1:1094207249669:web:66b4c2f55805c44be52b6c"
+        };
+
+        const fbApp = initializeApp(firebaseConfig);
+        const db = getDatabase(fbApp);
+        const ADMIN_PIN = '1234';
+
+        // Known nodes classification (Admin vs User)
+        const KNOWN_NODES = {
+            products: { label: 'Products Catalog & Uploaded Images', owner: 'admin', desc: 'Admin dwara add kiye gaye products, prices, bulk tiers aur images' },
+            settings: { label: 'Store & Support Settings', owner: 'admin', desc: 'Store name, top banner, WhatsApp, Gmail, Telegram settings' },
+            liveCodePatches: { label: 'Live Find & Replace Code Rules', owner: 'admin', desc: 'Admin ke live HTML/CSS code patches' },
+            blockedUsers: { label: 'Blocked Users Moderation List', owner: 'admin', desc: 'Admin dwara block kiye gaye review users' },
+            orders: { label: 'Customer Orders & Payments', owner: 'user', desc: 'Users ke placed orders, delivery address, aur paid/pending status' },
+            reviews: { label: 'Customer Ratings & Reviews', owner: 'user', desc: 'Users ke product star ratings aur text reviews' },
+            supportChats: { label: 'Live Customer Support Chats', owner: 'user', desc: 'Users aur Admin ke beech live chat messages' }
+        };
+
+        const app = {
+            dbData: {},
+            activeTab: 'overview',
+            inspectingNode: null,
+
+            init() {
+                if (localStorage.getItem('rudra_admin_unlocked') === 'true') {
+                    document.getElementById('lockScreen').style.display = 'none';
+                }
+
+                onValue(ref(db, '/'), (snapshot) => {
+                    this.dbData = snapshot.val() || {};
+                    this.refreshAll();
+                });
+            },
+
+            unlock() {
+                const pin = document.getElementById('pinField').value.trim();
+                if (pin === ADMIN_PIN) {
+                    localStorage.setItem('rudra_admin_unlocked', 'true');
+                    document.getElementById('lockScreen').style.display = 'none';
+                    this.toast('🔓 Master Storage Inspector Unlocked!');
+                } else {
+                    this.toast('❌ Incorrect Admin PIN!');
+                }
+            },
+
+            lock() {
+                localStorage.removeItem('rudra_admin_unlocked');
+                document.getElementById('pinField').value = '';
+                document.getElementById('lockScreen').style.display = 'flex';
+            },
+
+            switchTab(tab) {
+                this.activeTab = tab;
+                ['overview', 'admin', 'user', 'images', 'device'].forEach(t => {
+                    document.getElementById(`view-${t}`).style.display = t === tab ? 'block' : 'none';
+                    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+                });
+            },
+
+            formatBytes(bytes) {
+                if (!bytes || bytes <= 0) return '0 B';
+                const units = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + units[i];
+            },
+
+            byteSize(val) {
+                if (val === null || val === undefined) return 0;
+                return new Blob([typeof val === 'string' ? val : JSON.stringify(val)]).size;
+            },
+
+            countItems(val) {
+                if (!val) return 0;
+                if (typeof val !== 'object') return 1;
+                return Object.keys(val).length;
+            },
+
+            getLocalBreakdown() {
+                let adminBytes = 0, userBytes = 0, otherBytes = 0;
+                const items = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const val = localStorage.getItem(key) || '';
+                    const bytes = this.byteSize(key + val);
+
+                    let panel = 'other';
+                    if (key.includes('admin')) { panel = 'admin'; adminBytes += bytes; }
+                    else if (key.startsWith('apex_')) { panel = 'user'; userBytes += bytes; }
+                    else { otherBytes += bytes; }
+
+                    items.push({ key, val, bytes, panel });
+                }
+                return { items, adminBytes, userBytes, otherBytes, totalBytes: adminBytes + userBytes + otherBytes };
+            },
+
+            refreshAll() {
+                // Combine known nodes + any extra custom nodes in Firebase
+                const allKeys = Array.from(new Set([...Object.keys(KNOWN_NODES), ...Object.keys(this.dbData || {})]));
+
+                let totalCloudBytes = 0;
+                let adminCloudBytes = 0;
+                let userCloudBytes = 0;
+                let totalRecords = 0;
+
+                const nodeList = allKeys.map(key => {
+                    const raw = this.dbData[key];
+                    const bytes = this.byteSize(raw);
+                    const count = key === 'settings' ? (raw ? 1 : 0) : this.countItems(raw);
+                    const meta = KNOWN_NODES[key] || { label: `Custom Node (${key})`, owner: 'admin', desc: 'Custom database node' };
+
+                    totalCloudBytes += bytes;
+                    totalRecords += count;
+                    if (meta.owner === 'admin') adminCloudBytes += bytes;
+                    else userCloudBytes += bytes;
+
+                    return { key, raw, bytes, count, ...meta };
+                }).sort((a, b) => b.bytes - a.bytes);
+
+                const localStats = this.getLocalBreakdown();
+                const grandTotalAppBytes = totalCloudBytes + localStats.totalBytes;
+
+                // 1. Master Summary Cards
+                document.getElementById('masterSummaryCards').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Pure App Total Data</div>
+                        <div class="stat-val gradient-text">${this.formatBytes(grandTotalAppBytes)}</div>
+                        <div class="stat-sub">Cloud (${this.formatBytes(totalCloudBytes)}) + Device (${this.formatBytes(localStats.totalBytes)})</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Admin Panel Data</div>
+                        <div class="stat-val" style="color: var(--accent-purple);">${this.formatBytes(adminCloudBytes + localStats.adminBytes)}</div>
+                        <div class="stat-sub">Products, Images, Rules, Settings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">User Panel Data</div>
+                        <div class="stat-val" style="color: var(--accent-blue);">${this.formatBytes(userCloudBytes + localStats.userBytes)}</div>
+                        <div class="stat-sub">Orders, Reviews, Chats, Cart</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Firebase Free Quota</div>
+                        <div class="stat-val" style="color: var(--accent-green);">${((totalCloudBytes / (1024*1024*1024))*100).toFixed(4)}%</div>
+                        <div class="stat-sub">${totalRecords} Total Records (1 GB Limit)</div>
+                    </div>
+                `;
+
+                // 2. Render Overview Nodes
+                document.getElementById('totalDbSizePill').innerText = `Total Cloud: ${this.formatBytes(totalCloudBytes)}`;
+                document.getElementById('allNodesBreakdown').innerHTML = nodeList.map(n => {
+                    const pct = totalCloudBytes > 0 ? Math.round((n.bytes / totalCloudBytes) * 100) : 0;
+                    const badgeClass = n.owner === 'admin' ? 'tag-admin' : 'tag-user';
+                    const badgeText = n.owner === 'admin' ? 'Admin Panel' : 'User Panel';
+
+                    return `
+                        <div class="node-row">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <strong style="font-size:0.9rem;">${n.label}</strong>
+                                        <span class="tag-pill ${badgeClass}">${badgeText}</span>
+                                    </div>
+                                    <div style="font-size:0.74rem; color:var(--text-secondary); margin-top:3px;">${n.desc}</div>
+                                    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Firebase Path: <code>/${n.key}</code> • ${n.count} record(s)</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:0.84rem; font-weight:800; color:var(--accent-gold);">${this.formatBytes(n.bytes)} (${pct}%)</span>
+                                    <button class="btn btn-grad" onclick="app.inspectNodeInOverview('${n.key}')">
+                                        <i class="fa-solid fa-eye"></i> View / Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (this.inspectingNode) {
+                    this.inspectNodeInOverview(this.inspectingNode, false);
+                }
+
+                // 3. Render Separated Admin Panel Tab & User Panel Tab
+                this.renderSeparatedPanelView('admin', nodeList.filter(n => n.owner === 'admin'), localStats);
+                this.renderSeparatedPanelView('user', nodeList.filter(n => n.owner === 'user'), localStats);
+
+                // 4. Render Uploaded Images Tab
+                this.renderImagesView(totalCloudBytes);
+
+                // 5. Render Device LocalStorage Tab
+                this.renderDeviceStorageView(localStats);
+            },
+
+            inspectNodeInOverview(nodeKey, shouldScroll = true) {
+                this.inspectingNode = nodeKey;
+                const card = document.getElementById('quickInspectorCard');
+                const body = document.getElementById('inspectorBody');
+                const meta = KNOWN_NODES[nodeKey] || { label: nodeKey };
+                const data = this.dbData[nodeKey];
+
+                card.style.display = 'block';
+                document.getElementById('inspectorTitle').innerText = `${meta.label} (/${nodeKey})`;
+                document.getElementById('inspectorMeta').innerText = `Size: ${this.formatBytes(this.byteSize(data))}`;
+                document.getElementById('inspectorWipeBtn').onclick = () => this.deletePath(nodeKey, `Poora "${meta.label}" section`);
+
+                body.innerHTML = this.buildNodeRecordsHtml(nodeKey, data);
+                if (shouldScroll) card.scrollIntoView({ behavior: 'smooth' });
+            },
+
+            renderSeparatedPanelView(panelType, nodes, localStats) {
+                const isAdmin = panelType === 'admin';
+                const statsEl = document.getElementById(isAdmin ? 'adminPanelStats' : 'userPanelStats');
+                const secEl = document.getElementById(isAdmin ? 'adminPanelSections' : 'userPanelSections');
+
+                const cloudBytes = nodes.reduce((s, n) => s + n.bytes, 0);
+                const devBytes = isAdmin ? localStats.adminBytes : localStats.userBytes;
+                const recCount = nodes.reduce((s, n) => s + n.count, 0);
+
+                statsEl.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">${isAdmin ? 'Admin' : 'User'} Total Data</div>
+                        <div class="stat-val gradient-text">${this.formatBytes(cloudBytes + devBytes)}</div>
+                        <div class="stat-sub">Cloud + Device Combined</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Firebase Cloud Data</div>
+                        <div class="stat-val" style="color:var(--accent-purple);">${this.formatBytes(cloudBytes)}</div>
+                        <div class="stat-sub">${nodes.length} Database Sections</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Device Local Data</div>
+                        <div class="stat-val" style="color:var(--accent-gold);">${this.formatBytes(devBytes)}</div>
+                        <div class="stat-sub">${isAdmin ? 'Admin Login Session' : 'Cart, Name, Phone, Address'}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Saved Records</div>
+                        <div class="stat-val" style="color:var(--accent-green);">${recCount}</div>
+                        <div class="stat-sub">Active Items in Cloud</div>
+                    </div>
+                `;
+
+                secEl.innerHTML = nodes.map(n => `
+                    <div class="section-card">
+                        <div class="section-head">
+                            <div>
+                                <h3 style="font-size:0.98rem; font-weight:800;">${n.label} <span style="color:var(--accent-gold); font-size:0.82rem;">(${this.formatBytes(n.bytes)})</span></h3>
+                                <span style="font-size:0.74rem; color:var(--text-secondary);">Path: /${n.key} • ${n.count} item(s)</span>
+                            </div>
+                            <button class="btn btn-danger" onclick="app.deletePath('${n.key}', 'Poora ${n.label}')">
+                                <i class="fa-solid fa-trash"></i> Delete All (${n.count})
+                            </button>
+                        </div>
+                        ${this.buildNodeRecordsHtml(n.key, n.raw)}
+                    </div>
+                `).join('');
+            },
+
+            buildNodeRecordsHtml(nodeKey, nodeData) {
+                if (!nodeData || (typeof nodeData === 'object' && Object.keys(nodeData).length === 0)) {
+                    return `<p style="font-size:0.8rem; color:var(--text-muted); padding:8px 0;">Is section mein abhi koi data save nahi hai.</p>`;
+                }
+
+                if (nodeKey === 'settings' || typeof nodeData !== 'object') {
+                    return `
+                        <div class="record-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong>/${nodeKey} Configuration</strong>
+                                <span style="font-size:0.72rem; color:var(--accent-gold);">${this.formatBytes(this.byteSize(nodeData))}</span>
+                            </div>
+                            <pre>${this.escapeHtml(JSON.stringify(nodeData, null, 2))}</pre>
+                        </div>
+                    `;
+                }
+
+                return Object.entries(nodeData).map(([childKey, val]) => {
+                    const size = this.formatBytes(this.byteSize(val));
+                    const title = val.name || (val.orderId ? `Order #${val.orderId} (${val.customerName})` : null) || (val.customerName ? `Chat: ${val.customerName}` : null) || val.title || (val.author ? `Review by ${val.author}` : null) || childKey;
+
+                    // Base64 image strings ko JSON preview mein short dikhayein taaki screen hang na ho
+                    const cleanPreviewObj = JSON.parse(JSON.stringify(val));
+                    if (cleanPreviewObj.imageUrl && cleanPreviewObj.imageUrl.startsWith('data:image')) {
+                        cleanPreviewObj.imageUrl = `[Base64 Image Data: ${this.formatBytes(this.byteSize(val.imageUrl))}]`;
+                    }
+                    if (Array.isArray(cleanPreviewObj.gallery)) {
+                        cleanPreviewObj.gallery = cleanPreviewObj.gallery.map((g, i) =>
+                            g && g.startsWith('data:image') ? `[Base64 Gallery #${i+1}: ${this.formatBytes(this.byteSize(g))}]` : g
+                        );
+                    }
+
+                    return `
+                        <div class="record-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <div>
+                                    <strong style="font-size:0.85rem;">${this.escapeHtml(String(title))}</strong>
+                                    <span style="font-size:0.72rem; color:var(--text-muted); margin-left:6px;">Key: ${childKey} • ${size}</span>
+                                </div>
+                                <button class="btn btn-danger" onclick="app.deletePath('${nodeKey}/${childKey}', '${this.escapeHtml(String(title)).replace(/'/g, '')}')">
+                                    <i class="fa-solid fa-trash-can"></i> Delete
+                                </button>
+                            </div>
+                            <pre>${this.escapeHtml(JSON.stringify(cleanPreviewObj, null, 2))}</pre>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            renderImagesView(totalCloudBytes) {
+                const prods = this.dbData.products || {};
+                const images = [];
+
+                Object.entries(prods).forEach(([prodId, p]) => {
+                    if (!p) return;
+                    const seen = new Set();
+                    if (p.imageUrl) {
+                        seen.add(p.imageUrl);
+                        images.push({
+                            prodId, prodName: p.name || prodId, slot: 'Main Cover',
+                            path: `/products/${prodId}/imageUrl`, src: p.imageUrl,
+                            isBase64: p.imageUrl.startsWith('data:image'), bytes: this.byteSize(p.imageUrl)
+                        });
+                    }
+                    const gal = Array.isArray(p.gallery) ? p.gallery : Object.values(p.gallery || {});
+                    gal.forEach((src, idx) => {
+                        if (src && !seen.has(src)) {
+                            seen.add(src);
+                            images.push({
+                                prodId, prodName: p.name || prodId, slot: `Gallery #${idx + 1}`,
+                                path: `/products/${prodId}/gallery/${idx}`, src,
+                                isBase64: src.startsWith('data:image'), bytes: this.byteSize(src)
+                            });
+                        }
+                    });
+                });
+
+                images.sort((a, b) => b.bytes - a.bytes);
+                const dbUploads = images.filter(i => i.isBase64);
+                const extLinks = images.filter(i => !i.isBase64);
+                const totalImgBytes = images.reduce((s, i) => s + i.bytes, 0);
+
+                document.getElementById('imageStorageStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Total Image Storage</div>
+                        <div class="stat-val gradient-text">${this.formatBytes(totalImgBytes)}</div>
+                        <div class="stat-sub">${totalCloudBytes > 0 ? Math.round((totalImgBytes/totalCloudBytes)*100) : 0}% of Entire Firebase DB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Uploaded Photos (DB)</div>
+                        <div class="stat-val" style="color:var(--accent-purple);">${dbUploads.length}</div>
+                        <div class="stat-sub">${this.formatBytes(dbUploads.reduce((s, x) => s + x.bytes, 0))} Base64 Data</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">External URL Links</div>
+                        <div class="stat-val" style="color:var(--accent-green);">${extLinks.length}</div>
+                        <div class="stat-sub">${this.formatBytes(extLinks.reduce((s, x) => s + x.bytes, 0))} Text Links Only</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Images</div>
+                        <div class="stat-val" style="color:var(--accent-gold);">${images.length}</div>
+                        <div class="stat-sub">Across ${Object.keys(prods).length} Products</div>
+                    </div>
+                `;
+
+                const grid = document.getElementById('allImagesGrid');
+                if (!images.length) {
+                    grid.innerHTML = `<p style="font-size:0.82rem; color:var(--text-muted);">Koi product image nahi mili.</p>`;
+                    return;
+                }
+
+                grid.innerHTML = images.map(img => `
+                    <div class="img-card">
+                        <div class="img-box">
+                            <img src="${img.src}" alt="${this.escapeHtml(img.prodName)}">
+                            <span class="tag-pill ${img.isBase64 ? 'tag-admin' : 'tag-user'}" style="position:absolute; top:8px; left:8px;">
+                                ${img.isBase64 ? 'DB Upload' : 'URL Link'}
+                            </span>
+                            <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.85); color:var(--accent-gold); font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:99px;">
+                                ${this.formatBytes(img.bytes)}
+                            </span>
+                        </div>
+                        <div style="padding:10px; display:flex; flex-direction:column; gap:5px; flex:1;">
+                            <div style="font-size:0.7rem; color:var(--accent-purple); font-weight:700;">${img.slot}</div>
+                            <div style="font-size:0.86rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${this.escapeHtml(img.prodName)}</div>
+                            <div style="font-family:monospace; font-size:0.68rem; color:var(--text-muted); word-break:break-all;">${img.path}</div>
+                            <button class="btn btn-danger" style="margin-top:auto; justify-content:center;" onclick="app.deleteSingleImage('${img.prodId}', '${encodeURIComponent(img.src)}', '${this.escapeHtml(img.prodName).replace(/'/g, '')}')">
+                                <i class="fa-solid fa-trash-can"></i> Delete Image
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderDeviceStorageView(localStats) {
+                document.getElementById('deviceStorageStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Total Browser Storage</div>
+                        <div class="stat-val gradient-text">${this.formatBytes(localStats.totalBytes)}</div>
+                        <div class="stat-sub">${localStats.items.length} Saved Keys</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Admin Device Data</div>
+                        <div class="stat-val" style="color:var(--accent-purple);">${this.formatBytes(localStats.adminBytes)}</div>
+                        <div class="stat-sub">Admin Lock / Session Keys</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">User Device Data</div>
+                        <div class="stat-val" style="color:var(--accent-blue);">${this.formatBytes(localStats.userBytes)}</div>
+                        <div class="stat-sub">Cart, Profile, Device UID</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Browser Quota</div>
+                        <div class="stat-val" style="color:var(--accent-green);">~5 MB</div>
+                        <div class="stat-sub">Standard LocalStorage Limit</div>
+                    </div>
+                `;
+
+                const list = document.getElementById('deviceKeysList');
+                if (!localStats.items.length) {
+                    list.innerHTML = `<p style="font-size:0.82rem; color:var(--text-muted);">Browser LocalStorage bilkul khaali hai.</p>`;
+                    return;
+                }
+
+                list.innerHTML = localStats.items.map(item => {
+                    let formatted = item.val;
+                    try { formatted = JSON.stringify(JSON.parse(item.val), null, 2); } catch (e) {}
+                    const badgeClass = item.panel === 'admin' ? 'tag-admin' : (item.panel === 'user' ? 'tag-user' : 'tag-shared');
+                    const badgeLabel = item.panel === 'admin' ? 'Admin Panel' : (item.panel === 'user' ? 'User Panel' : 'System');
+
+                    return `
+                        <div class="record-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <strong style="font-size:0.85rem;">${this.escapeHtml(item.key)}</strong>
+                                    <span class="tag-pill ${badgeClass}">${badgeLabel}</span>
+                                    <span style="font-size:0.72rem; color:var(--accent-green);">(${this.formatBytes(item.bytes)})</span>
+                                </div>
+                                <button class="btn btn-danger" onclick="app.deleteLocalKey('${item.key.replace(/'/g, "\\'")}')">
+                                    <i class="fa-solid fa-trash-can"></i> Delete Key
+                                </button>
+                            </div>
+                            <pre>${this.escapeHtml(formatted)}</pre>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            deletePath(path, label) {
+                if (confirm(`Kya aap "${label}" ko Firebase database se permanently delete karna chahte hain?`)) {
+                    remove(ref(db, path)).then(() => {
+                        this.toast(`🗑️ Deleted: ${label}`);
+                    });
+                }
+            },
+
+            deleteSingleImage(prodId, encodedSrc, prodName) {
+                const target = decodeURIComponent(encodedSrc);
+                const prod = (this.dbData.products || {})[prodId];
+                if (!prod) return;
+
+                if (!confirm(`"${prodName}" ki is photo ko delete karein?`)) return;
+
+                const gal = Array.isArray(prod.gallery) ? prod.gallery : Object.values(prod.gallery || {});
+                const newGal = gal.filter(x => x && x !== target);
+                const newMain = prod.imageUrl === target ? (newGal[0] || '') : prod.imageUrl;
+
+                update(ref(db, `products/${prodId}`), {
+                    imageUrl: newMain,
+                    gallery: newGal
+                }).then(() => {
+                    this.toast('🗑️ Image deleted & storage freed!');
+                });
+            },
+
+            deleteLocalKey(key) {
+                if (confirm(`LocalStorage key "${key}" delete karein?`)) {
+                    localStorage.removeItem(key);
+                    this.refreshAll();
+                    this.toast(`🗑️ Deleted local key: ${key}`);
+                }
+            },
+
+            clearAllLocal() {
+                if (confirm('Is device ka poora LocalStorage data clear karein?')) {
+                    localStorage.clear();
+                    this.refreshAll();
+                    this.toast('🧹 All LocalStorage cleared!');
+                }
+            },
+
+            escapeHtml(str) {
+                return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            },
+
+            toast(msg) {
+                const el = document.getElementById('toast');
+                el.innerText = msg;
+                el.style.display = 'block';
+                clearTimeout(this._t);
+                this._t = setTimeout(() => { el.style.display = 'none'; }, 2800);
+            }
+        };
+
+        window.app = app;
+        window.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+  </html>
